@@ -1,0 +1,108 @@
+:root {
+    --primary-dark: #0f172a;
+    --primary-brand: #1e40af;
+    --primary-accent: #3b82f6;
+    --bg-surface: #f1f5f9;
+    --card-bg: #ffffff;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border-soft: #e2e8f0;
+}
+
+body {
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* Navbar Institucional */
+.navbar-institucional {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-brand) 100%);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+/* Tarjetas del Catálogo de Equipos */
+.equipo-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    transition: all 0.25s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.equipo-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(30, 64, 175, 0.12);
+    border-color: var(--primary-accent);
+}
+
+.equipo-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background-color: #eff6ff;
+    color: var(--primary-brand);
+}
+
+.equipo-icon-box.especializado {
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+/* Tarjetas de Unidades Disponibles por Sede */
+.sede-section {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid var(--border-soft);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.unidad-item-card {
+    border: 1px solid var(--border-soft);
+    border-left: 4px solid var(--primary-accent);
+    border-radius: 10px;
+    padding: 1rem;
+    background-color: #f8fafc;
+    transition: background-color 0.2s ease;
+}
+
+.unidad-item-card:hover {
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Badges de Estado */
+.badge-estado {
+    padding: 0.4em 0.75em;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.3px;
+}
+
+.estado-CONFIRMADA { background-color: #dcfce7; color: #166534; }
+.estado-PENDIENTE { background-color: #fef3c7; color: #92400e; }
+.estado-EN_PRESTAMO { background-color: #dbeafe; color: #1e40af; }
+.estado-RECHAZADA, .estado-NO_CONFIRMADA { background-color: #fee2e2; color: #991b1b; }
+.estado-CANCELADA { background-color: #f1f5f9; color: #475569; }
+.estado-VENCIDA { background-color: #ffedd5; color: #9a3412; }
+
+/* Login Card */
+.login-wrapper {
+    min-height: 100vh;
+    background: radial-gradient(circle at top right, #dbeafe, #f1f5f9 60%);
+}
+
+.login-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+}

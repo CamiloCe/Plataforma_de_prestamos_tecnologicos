@@ -1,0 +1,5 @@
+﻿target/
+.nb-gradle/
+nbproject/private/
+*.log
+.DS_Store

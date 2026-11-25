@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Portal del Solicitante · Recursos Tecnológicos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-dark navbar-institucional px-4 py-3 mb-4">
+    <div class="container">
+        <span class="navbar-brand fw-bold d-flex align-items-center gap-2">
+            <i class="bi bi-laptop"></i> Portal del Estudiante · <span class="fw-normal" th:text="${usuario.nombre}"></span>
+        </span>
+        <div class="d-flex align-items-center gap-3">
+            <span th:if="${usuario.bloqueado}" class="badge bg-danger px-3 py-2"><i class="bi bi-slash-circle me-1"></i> CUENTA BLOQUEADA</span>
+            <span th:unless="${usuario.bloqueado}" class="badge bg-success px-3 py-2"><i class="bi bi-check-circle me-1"></i> HABILITADO</span>
+            <a th:href="@{/logout}" class="btn btn-outline-light btn-sm">Cerrar Sesión</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container pb-5">
+    <div th:if="${exito}" class="alert alert-success shadow-sm fw-semibold" th:text="${exito}"></div>
+    <div th:if="${error}" class="alert alert-danger shadow-sm fw-semibold" th:text="${error}"></div>
+
+    <!-- 1. CATÁLOGO VISUAL EN TARJETAS -->
+    <div class="mb-4">
+        <div class="mb-3">
+            <h5 class="fw-bold mb-0">Catálogo de Equipos Disponibles</h5>
+            <small class="text-muted">Duración máxima permitida: <strong>4 horas continuas</strong> por reserva en bloques de hora entera.</small>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-3" th:each="t : ${catalogo}">
+                <div class="equipo-card p-3">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="equipo-icon-box" th:classappend="${t.especializado ? 'especializado' : ''}">
+                                <i class="bi" th:classappend="${t.especializado ? 'bi-camera-reels' : 'bi-laptop'}"></i>
+                            </div>
+                            <span th:if="${t.especializado}" class="badge bg-warning text-dark">Especializado</span>
+                            <span th:unless="${t.especializado}" class="badge bg-primary-subtle text-primary">Estándar</span>
+                        </div>
+                        <h6 class="fw-bold mb-1" th:text="${t.nombre}"></h6>
+                        <p class="small text-muted mb-3" th:text="${t.descripcion}"></p>
+                    </div>
+                    <div>
+                        <div class="small text-muted mb-2" style="font-size: 0.75rem;">
+                            <i class="bi" th:classappend="${t.especializado ? 'bi-shield-check text-warning' : 'bi-lightning-charge text-success'}"></i>
+                            <span th:text="${t.especializado ? 'Requiere aprobación de Coordinación' : 'Aprobación automática'}"></span>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm w-100 btn-seleccionar-tipo"
+                                th:data-id-tipo="${t.idTipo}">
+                            Seleccionar equipo <i class="bi bi-arrow-down-circle ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. BUSCADOR AMIGABLE CON BLOQUES DE HORA ENTERA -->
+    <div id="seccionBuscador" class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-calendar2-week text-primary me-2"></i>Buscar Unidades por Sede y Franja Horaria</h5>
+            <form th:action="@{/solicitante/panel}" method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Tipo de Equipo</label>
+                    <select id="selectTipoEquipo" name="idTipo" class="form-select">
+                        <option value="">Todos los equipos</option>
+                        <option th:each="t : ${catalogo}" th:value="${t.idTipo}" th:text="${t.nombre}"
+                                th:selected="${idTipoSel == t.idTipo}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Sede</label>
+                    <select name="sede" class="form-select">
+                        <option value="TODAS" th:selected="${sedeSel == null || sedeSel == 'TODAS'}">Todas las sedes</option>
+                        <option value="Sede Norte" th:selected="${sedeSel == 'Sede Norte'}">Sede Norte</option>
+                        <option value="Sede Sur" th:selected="${sedeSel == 'Sede Sur'}">Sede Sur</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Fecha de Reserva</label>
+                    <input type="date" name="fecha" class="form-control"
+                           th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                           th:value="${fechaSel}" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Hora Inicio</label>
+                    <select id="selectHoraInicio" name="horaInicio" class="form-select" required>
+                        <option value="07:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '07:00'}">07:00 AM</option>
+                        <option value="08:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '08:00'}">08:00 AM</option>
+                        <option value="09:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '09:00'}">09:00 AM</option>
+                        <option value="10:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '10:00'}">10:00 AM</option>
+                        <option value="11:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '11:00'}">11:00 AM</option>
+                        <option value="12:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '12:00'}">12:00 PM</option>
+                        <option value="13:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '13:00'}">01:00 PM</option>
+                        <option value="14:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '14:00'}">02:00 PM</option>
+                        <option value="15:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '15:00'}">03:00 PM</option>
+                        <option value="16:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '16:00'}">04:00 PM</option>
+                        <option value="17:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '17:00'}">05:00 PM</option>
+                        <option value="18:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '18:00'}">06:00 PM</option>
+                        <option value="19:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '19:00'}">07:00 PM</option>
+                        <option value="20:00" th:selected="${horaInicioSel != null && horaInicioSel.toString() == '20:00'}">08:00 PM</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Hora Fin (Máx. 4h)</label>
+                    <select id="selectHoraFin" name="horaFin" class="form-select" required>
+                        <option value="08:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '08:00'}">08:00 AM</option>
+                        <option value="09:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '09:00'}">09:00 AM</option>
+                        <option value="10:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '10:00'}">10:00 AM</option>
+                        <option value="11:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '11:00'}">11:00 AM</option>
+                        <option value="12:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '12:00'}">12:00 PM</option>
+                        <option value="13:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '13:00'}">01:00 PM</option>
+                        <option value="14:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '14:00'}">02:00 PM</option>
+                        <option value="15:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '15:00'}">03:00 PM</option>
+                        <option value="16:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '16:00'}">04:00 PM</option>
+                        <option value="17:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '17:00'}">05:00 PM</option>
+                        <option value="18:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '18:00'}">06:00 PM</option>
+                        <option value="19:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '19:00'}">07:00 PM</option>
+                        <option value="20:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '20:00'}">08:00 PM</option>
+                        <option value="21:00" th:selected="${horaFinSel != null && horaFinSel.toString() == '21:00'}">09:00 PM</option>
+                    </select>
+                </div>
+                <div class="col-12 d-flex justify-content-between align-items-center">
+                    <span id="resumenDuracion" class="small text-primary fw-semibold"></span>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-search me-1"></i> Buscar Unidades Disponibles
+                    </button>
+                </div>
+            </form>
+
+            <!-- RESULTADOS AGRUPADOS POR SEDE -->
+            <div th:if="${unidadesPorSede != null}" class="mt-4 pt-3 border-top">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0">
+                        Disponibilidad para el <span class="text-primary" th:text="${fechaSel}"></span>
+                        (<span th:text="${horaInicioSel}"></span> - <span th:text="${horaFinSel}"></span>)
+                    </h6>
+                    <span class="badge bg-dark" th:text="${totalDisponibles} + ' unidad(es) libre(s)'"></span>
+                </div>
+
+                <div th:if="${#maps.isEmpty(unidadesPorSede)}" class="alert alert-warning">
+                    No hay unidades disponibles para los filtros y franja horaria seleccionados.
+                </div>
+
+                <div th:each="entrada : ${unidadesPorSede}" class="sede-section">
+                    <h6 class="fw-bold text-primary mb-3">
+                        <i class="bi bi-geo-alt-fill me-1"></i> <span th:text="${entrada.key}"></span>
+                        <span class="badge bg-primary-subtle text-primary ms-2" th:text="${#lists.size(entrada.value)} + ' disponibles'"></span>
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-4" th:each="u : ${entrada.value}">
+                            <div class="unidad-item-card d-flex flex-column justify-content-between h-100">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-bold fs-6" th:text="${u.codigo}"></span>
+                                        <span th:if="${u.tipoEquipo.especializado}" class="badge bg-warning text-dark">Especializado</span>
+                                        <span th:unless="${u.tipoEquipo.especializado}" class="badge bg-info text-dark">Estándar</span>
+                                    </div>
+                                    <div class="small fw-semibold text-dark" th:text="${u.tipoEquipo.nombre}"></div>
+                                    <div class="small text-muted" th:text="${u.sede}"></div>
+                                </div>
+                                <form th:action="@{/solicitante/reservar}" method="post">
+                                    <input type="hidden" name="idUnidad" th:value="${u.idUnidad}">
+                                    <input type="hidden" name="fecha" th:value="${fechaSel}">
+                                    <input type="hidden" name="horaInicio" th:value="${horaInicioSel}">
+                                    <input type="hidden" name="horaFin" th:value="${horaFinSel}">
+                                    <button type="submit" class="btn btn-success btn-sm w-100 fw-semibold">
+                                        <i class="bi bi-calendar-check me-1"></i> Reservar Esta Unidad
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. MIS RESERVAS CON CÓDIGO ÚNICO DE ENTREGA PARA PRESENTAR EN VENTANILLA -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-1"><i class="bi bi-qr-code text-primary me-2"></i>Mis Reservas y Códigos de Entrega</h5>
+            <p class="text-muted small mb-3">Presenta tu <strong>Código de Entrega</strong> al auxiliar de sede para retirar el equipo.</p>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Código Entrega</th>
+                            <th>Unidad / Sede</th>
+                            <th>Equipo</th>
+                            <th>Fecha y Franja</th>
+                            <th>Estado</th>
+                            <th>Observación</th>
+                            <th class="text-end">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="r : ${misReservas}">
+                            <td><span class="badge bg-dark fs-6 font-monospace" th:text="${r.codigoRetiro}"></span></td>
+                            <td><strong th:text="${r.unidadEquipo.codigo}"></strong> · <span class="text-muted small" th:text="${r.unidadEquipo.sede}"></span></td>
+                            <td th:text="${r.unidadEquipo.tipoEquipo.nombre}"></td>
+                            <td><span th:text="${r.fecha}"></span> · <span th:text="${r.horaInicio}"></span> a <span th:text="${r.horaFin}"></span></td>
+                            <td><span class="badge-estado" th:classappend="'estado-' + ${r.estado}" th:text="${r.estado}"></span></td>
+                            <td class="small text-muted" th:text="${r.justificacion}"></td>
+                            <td class="text-end">
+                                <form th:if="${r.estado == 'PENDIENTE' || r.estado == 'CONFIRMADA'}"
+                                      th:action="@{'/solicitante/cancelar/' + ${r.idReserva}}" method="post">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Cancelar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
